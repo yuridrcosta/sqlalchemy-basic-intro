@@ -2,6 +2,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy import inspect
 
 # Classe base para definições de classes pro banco de dados
 
@@ -10,7 +11,6 @@ class BancoDeDados:
     base = declarative_base()
     engine = None
     session = None
-    alunos = 0
 
     def __init__(self, database_url,echo=True):
         self.engine = create_engine(database_url,echo=echo)
@@ -31,14 +31,9 @@ class BancoDeDados:
         
         # Construtor do objeto Alunos
         def __init__(self, params):
-            BancoDeDados.alunos +=1
-            self.id = BancoDeDados.alunos 
             self.nome = params['nome']
             self.email = params['email']
             self.ano = params['ano']
-
-    def show(self,Table):
-        print('')
 
     def insert(self,Table,params):
         tr = Table(params)
@@ -47,8 +42,9 @@ class BancoDeDados:
 
     def delete(self,Table,id):
         tr = self.session.query(Table).filter(Table.id == id).first()
-        self.session.delete(tr)
-        self.session.commit()
+        if tr != None:
+            self.session.delete(tr)
+            self.session.commit()
 
 if __name__ == '__main__':
     # Para conectar a um banco de dados utilize o método create_engine com o seguinte padrão URL
@@ -67,8 +63,9 @@ if __name__ == '__main__':
 
     # Removendo alunos do banco de dados pelo nome
     aluno = bd.session.query(bd.Alunos).filter(bd.Alunos.nome == 'Teste').first()
-    bd.session.delete(aluno)
-    bd.session.commit()
+    if aluno != None:
+        bd.session.delete(aluno)
+        bd.session.commit()
 
     # Removendo alunos pelo id
     bd.delete(bd.Alunos,3)
