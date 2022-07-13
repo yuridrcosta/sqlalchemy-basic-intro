@@ -10,6 +10,7 @@ class BancoDeDados:
     base = declarative_base()
     engine = None
     session = None
+    alunos = 0
 
     def __init__(self, database_url,echo=True):
         self.engine = create_engine(database_url,echo=echo)
@@ -23,25 +24,52 @@ class BancoDeDados:
         __tablename__ = 'alunos'
 
         # Definição das colunas da tabela
-        aluno_id = Column(Integer, primary_key = True)
+        id = Column(Integer, primary_key = True)
         nome = Column(String)
         email = Column(String)
         ano = Column(Integer)
         
         # Construtor do objeto Alunos
         def __init__(self, params):
-            self.aluno_id = params['aluno_id']
+            BancoDeDados.alunos +=1
+            self.id = BancoDeDados.alunos 
             self.nome = params['nome']
             self.email = params['email']
             self.ano = params['ano']
+
+    def show(self,Table):
+        print('')
 
     def insert(self,Table,params):
         tr = Table(params)
         self.session.add(tr)
         self.session.commit()
 
+    def delete(self,Table,id):
+        tr = self.session.query(Table).filter(Table.id == id).first()
+        self.session.delete(tr)
+        self.session.commit()
+
 if __name__ == '__main__':
     # Para conectar a um banco de dados utilize o método create_engine com o seguinte padrão URL
     # 'dialect+driver://username:password@host:port/database' (Lembrando que Dialetos são os possíveis bancos de daods)
     bd = BancoDeDados('sqlite:///teste.sqlite',echo=True)
-    bd.insert(bd.Alunos,{'aluno_id':1,'nome':'Yuri Dimitri Ramos Costa','email':'yuridrcosta@gmail.com','ano':16})
+
+    # Inserindo novos alunos no banco de dados
+    bd.insert(bd.Alunos,{'nome':'Yuri Dimitri Ramos Costa','email':'yuridrcosta@gmail.com','ano':16})
+    bd.insert(bd.Alunos,{'nome':'Teste','email':'teste@example.com','ano':5})
+    bd.insert(bd.Alunos,{'nome':'Teste2','email':'teste2@example.com','ano':5})
+    bd.insert(bd.Alunos,{'nome':'Joao','email':'joao@example.com','ano':11})
+
+    print('Realizando uma busca por alunos que estão no ensino médio')
+    for a in bd.session.query(bd.Alunos).filter(bd.Alunos.ano > 9):
+        print(f'[ {a.id} ] {a.nome}\t{a.email}\t{a.ano}')
+
+    # Removendo alunos do banco de dados pelo nome
+    aluno = bd.session.query(bd.Alunos).filter(bd.Alunos.nome == 'Teste').first()
+    bd.session.delete(aluno)
+    bd.session.commit()
+
+    # Removendo alunos pelo id
+    bd.delete(bd.Alunos,3)
+
