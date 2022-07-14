@@ -40,6 +40,11 @@ class BancoDeDados:
         self.session.add(tr)
         self.session.commit()
 
+    def update(self,Table,params):
+        """id deve ser um parâmetro."""
+        self.session.query(Table).filter(Table.id == params['id']).update(params)
+        self.session.commit()
+
     def delete(self,Table,id):
         tr = self.session.query(Table).filter(Table.id == id).first()
         if tr != None:
@@ -69,4 +74,8 @@ if __name__ == '__main__':
 
     # Removendo alunos pelo id
     bd.delete(bd.Alunos,3)
+
+    # Atualizando nome
+    bd.update(bd.Alunos,{'id':11,'nome':'Nome alterado'})
+        
 
